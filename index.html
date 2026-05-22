@@ -59,7 +59,7 @@
     <script>
         // Configuración (Usa el mismo tópico que en tu ESP32)
         const broker = "broker.hivemq.com";
-        const puerto = 8000; // Puerto Websocket sin encriptar para el broker público
+        const puerto = 8884; // Puerto Websocket sin encriptar para el broker público
         const topic = "angel274_prueba_led_9876/esp32/led"; 
         const clientId = "WebClient-" + Math.random().toString(16).substr(2, 8);
 
@@ -73,6 +73,7 @@
 
         // Conectar al broker
         client.connect({
+            useSSL: true,
             onSuccess: () => {
                 document.getElementById("status").innerText = "● Conectado permanentemente a la Nube";
                 document.getElementById("status").style.color = "#2ecc71";
