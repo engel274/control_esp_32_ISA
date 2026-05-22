@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Global ESP32</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #1e1e24;
+            color: #fff;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #2a2a35;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            width: 80%;
+        }
+        .btn-on { background-color: #2ecc71; color: white; }
+        .btn-off { background-color: #e74c3c; color: white; }
+        .btn:hover { transform: scale(1.03); opacity: 0.9; }
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Control IoT ESP32</h2>
+        <p>Desde cualquier parte del mundo</p>
+        <hr style="border-color: #444;">
+        
+        <button class="btn btn-on" onclick="publicar('ON')">ENCENDER LED</button>
+        <button class="btn btn-off" onclick="publicar('OFF')">APAGAR LED</button>
+        
+        <div id="status">Conectando al servidor MQTT...</div>
+    </div>
+
+    <script>
+        // Configuración (Usa el mismo tópico que en tu ESP32)
+        const broker = "broker.hivemq.com";
+        const puerto = 8000; // Puerto Websocket sin encriptar para el broker público
+        const topic = "angel274_prueba_led_9876/esp32/led"; 
+        const clientId = "WebClient-" + Math.random().toString(16).substr(2, 8);
+
+        // Inicializar cliente MQTT
+        const client = new Paho.MQTT.Client(broker, puerto, clientId);
+
+        client.onConnectionLost = (responseObject) => {
+            document.getElementById("status").innerText = "Conexión perdida: " + responseObject.errorMessage;
+            document.getElementById("status").style.color = "#e74c3c";
+        };
+
+        // Conectar al broker
+        client.connect({
+            onSuccess: () => {
+                document.getElementById("status").innerText = "● Conectado permanentemente a la Nube";
+                document.getElementById("status").style.color = "#2ecc71";
+            },
+            onFailure: (error) => {
+                document.getElementById("status").innerText = "Error de conexión: " + error.errorMessage;
+                document.getElementById("status").style.color = "#e74c3c";
+            }
+        });
+
+        // Función para enviar ON u OFF
+        function publicar(estado) {
+            if (client.isConnected()) {
+                const message = new Paho.MQTT.Message(estado);
+                message.destinationName = topic;
+                client.send(message);
+                console.log("Comando enviado: " + estado);
+            } else {
+                alert("No estás conectado al servidor.");
+            }
+        }
+    </script>
+</body>
+</html>
